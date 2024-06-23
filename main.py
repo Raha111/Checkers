@@ -2,6 +2,7 @@ import pygame
 from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE,RED
 from checkers.game import Game
 from minimax.algo import minimax
+from minimax.algorithm import alpha_beta_minimax
 from checkers.constants import RED, WHITE, BLUE, SQUARE_SIZE
 
 FPS = 60
@@ -25,7 +26,8 @@ def main():
         clock.tick(FPS)
         
         if game.turn == WHITE:
-            value, new_board = minimax(game.get_board(), 4, WHITE, game)#depth=4 higher depth->better ai but longer to run
+            #value, new_board = minimax(game.get_board(), 4, WHITE, game)#depth=4 higher depth->better ai but longer to run
+            value, new_board = alpha_beta_minimax(game.get_board(), 4, float('-inf'), float('inf'), True, game)
             game.ai_move(new_board)   
             
 
