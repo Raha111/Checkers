@@ -1,5 +1,5 @@
 import pygame
-from  .constants import BLACK, ROWS, COLS, RED, SQUARE_SIZE, WHITE
+from  .constants import BLACK, ROWS, COLS, RED, SQUARE_SIZE, WHITE, GREY
 from .piece import Piece
 # when importing from same directory just use . before the file name
 # white is ai
@@ -10,7 +10,7 @@ class Board:
         #[[Piece(), 0, Piece()]
          #[0, Piece(), 0]
          #[]]
-        self.red_left = self.white_left = 12
+        self.red_left = self.white_left = 16
         self.red_kings = self.white_kings = 0
         self.create_board()
 
@@ -18,7 +18,7 @@ class Board:
         win.fill(BLACK)
         for row in range(ROWS):
             for col in range(row % 2, ROWS, 2):
-                pygame.draw.rect(win, RED, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                pygame.draw.rect(win, WHITE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
     
     
     def evaluate(self):
@@ -40,6 +40,7 @@ class Board:
 
         if row == 0 or row == ROWS - 1:
             piece.make_king()
+            piece.type = 'king'
             if piece.color == WHITE:
                 self.white_kings += 1
             else:
@@ -53,10 +54,18 @@ class Board:
             self.board.append([])
             for col in range(COLS):
                 if col % 2 == ((row + 1) % 2):
-                    if row < 3:
-                        self.board[row].append(Piece(row, col, WHITE))
-                    elif row > 4:
-                        self.board[row].append(Piece(row, col, RED))
+                    if row == 0:
+                        self.board[row].append(Piece(row, col, 'king', RED))  # Example for red pieces
+                    elif row == 1:
+                        self.board[row].append(Piece(row, col, 'queen', RED))
+                    elif row == 2:
+                        self.board[row].append(Piece(row, col, 'soldier', RED))
+                    elif row == 6:
+                        self.board[row].append(Piece(row, col, 'soldier', GREY))
+                    elif row == 7:
+                        self.board[row].append(Piece(row, col, 'queen', GREY))  # Example for white pieces
+                    elif row == 8:
+                        self.board[row].append(Piece(row, col, 'king', GREY))
                     else:
                         self.board[row].append(0)
                 else:

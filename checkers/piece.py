@@ -1,5 +1,5 @@
 import pygame
-from .constants import RED, WHITE, SQUARE_SIZE, GREY, CROWN
+from .constants import RED, WHITE, SQUARE_SIZE, GREY, KING, QUEEN, SOLDIER
 
 
 #represents one singular piece
@@ -8,11 +8,12 @@ class Piece:
     PADDING = 15
     OUTLINE = 2
 
-    def __init__(self, row, col, color):
+    def __init__(self, row, col, type, color):
         self.row = row
         self.col = col
         self.color = color
         self.king = False
+        self.type = type
 
         self.x = 0
         self.y = 0
@@ -26,11 +27,16 @@ class Piece:
         self.king = True
     
     def draw(self, win):
+        if self.type == 'king':
+            image = KING
+        elif self.type == 'queen':
+            image = QUEEN
+        else:
+            image = SOLDIER
         radius = SQUARE_SIZE//2 - self.PADDING
         pygame.draw.circle(win, GREY, (self.x, self.y), radius + self.OUTLINE)
         pygame.draw.circle(win, self.color, (self.x, self.y), radius)
-        if self.king:
-            win.blit(CROWN, (self.x - CROWN.get_width()//2, self.y - CROWN.get_height()//2))
+        win.blit(image, (self.x - image.get_width()//2, self.y - image.get_height()//2))
 
     def move(self, row, col):
         self.row = row
@@ -38,6 +44,5 @@ class Piece:
         self.calc_pos()
 
 
-    def __repr__(self):
-        return str(self.color) 
-        
+    def _repr_(self):
+        return str(self.color)
