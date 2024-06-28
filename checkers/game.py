@@ -41,11 +41,10 @@ class Game:
 
     def _move(self, row, col):
         piece = self.board.get_piece(row, col)
-        if self.selected and piece == 0 and (row, col) in self.valid_moves:
+        if self.selected and (row, col) in self.valid_moves:
             self.board.move(self.selected, row, col)
-            skipped = self.valid_moves[(row, col)]
-            if skipped:
-                self.board.remove(skipped)
+            if piece != 0 and piece.color != self.selected.color:
+              self.board.remove([piece])
             self.change_turn()
         else:
             return False

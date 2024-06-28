@@ -53,3 +53,7 @@ def main():
     pygame.quit()
 
 main()
+
+'''
+opponenet piece capture kora jayna, baki sob baki ache
+'''
