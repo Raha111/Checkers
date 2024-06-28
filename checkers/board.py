@@ -1,15 +1,10 @@
 import pygame
-from  .constants import BLACK, ROWS, COLS, RED, SQUARE_SIZE, WHITE, GREY
+from .constants import BLACK, ROWS, COLS, RED, SQUARE_SIZE, WHITE, GREY
 from .piece import Piece
-# when importing from same directory just use . before the file name
-# white is ai
 
 class Board:
     def __init__(self):
         self.board = []
-        #[[Piece(), 0, Piece()]
-         #[0, Piece(), 0]
-         #[]]
         self.red_left = self.white_left = 16
         self.red_kings = self.white_kings = 0
         self.create_board()
@@ -19,8 +14,7 @@ class Board:
         for row in range(ROWS):
             for col in range(row % 2, ROWS, 2):
                 pygame.draw.rect(win, WHITE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-    
-    
+
     def evaluate(self):
         return self.white_left - self.red_left + (self.white_kings * 0.5 - self.red_kings * 0.5)
 
@@ -31,16 +25,13 @@ class Board:
                 if piece != 0 and piece.color == color:
                     pieces.append(piece)
         return pieces
-        
-    
-    
+
     def move(self, piece, row, col):
         self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
         piece.move(row, col)
 
         if row == 0 or row == ROWS - 1:
             piece.make_king()
-            piece.type = 'king'
             if piece.color == WHITE:
                 self.white_kings += 1
             else:
@@ -55,17 +46,17 @@ class Board:
             for col in range(COLS):
                 if col % 2 == ((row + 1) % 2):
                     if row == 0:
-                        self.board[row].append(Piece(row, col, 'king', RED))  # Example for red pieces
+                        self.board[row].append(Piece(row, col, 'king', WHITE))
                     elif row == 1:
-                        self.board[row].append(Piece(row, col, 'queen', RED))
+                        self.board[row].append(Piece(row, col, 'queen', WHITE))
                     elif row == 2:
-                        self.board[row].append(Piece(row, col, 'soldier', RED))
+                        self.board[row].append(Piece(row, col, 'soldier', WHITE))
                     elif row == 6:
-                        self.board[row].append(Piece(row, col, 'soldier', GREY))
+                        self.board[row].append(Piece(row, col, 'soldier', RED))
                     elif row == 7:
-                        self.board[row].append(Piece(row, col, 'queen', GREY))  # Example for white pieces
+                        self.board[row].append(Piece(row, col, 'queen', RED))
                     elif row == 8:
-                        self.board[row].append(Piece(row, col, 'king', GREY))
+                        self.board[row].append(Piece(row, col, 'king', RED))
                     else:
                         self.board[row].append(0)
                 else:
@@ -98,82 +89,38 @@ class Board:
 
     def get_valid_moves(self, piece):
         moves = {}
-        left = piece.col - 1
-        right = piece.col + 1
-        row = piece.row
+        row, col = piece.row, piece.col
 
-        if piece.color == RED or piece.king:
-            moves.update(self._traverse_left(row - 1, max(row - 3, -1), -1, piece.color, left))
-            moves.update(self._traverse_right(row - 1, max(row - 3, -1), -1, piece.color, right))
-        if piece.color == WHITE or piece.king:
-            moves.update(self._traverse_left(row + 1, min(row + 3, ROWS), 1, piece.color, left))
-            moves.update(self._traverse_right(row + 1, min(row + 3, ROWS), 1, piece.color, right))
-
-        return moves
-
-    def _traverse_left(self, start, stop, step, color, left, skipped=[]):
-        moves = {}
-        last = []
-        for r in range(start, stop, step):
-            if left < 0:
-                break
-
-            current = self.board[r][left]
-            if current == 0:
-                if skipped and not last:
-                    break
-                elif skipped:
-                    moves[(r, left)] = last + skipped
-                else:
-                    moves[(r, left)] = last
-
-                if last:
-                    if step == -1:
-                        row = max(r - 3, 0)
-                    else:
-                        row = min(r + 3, ROWS)
-
-                    moves.update(self._traverse_left(r + step, row, step, color, left - 1, skipped=last))
-                    moves.update(self._traverse_right(r + step, row, step, color, left + 1, skipped=last))
-                break
-            elif current.color == color:
-                break
+        if piece.type == 'soldier':
+            if piece.color == RED:
+                moves.update(self._get_moves(row - 1, col, -1, piece.color))
             else:
-                last = [current]
-
-            left -= 1
-
-        return moves
-
-    def _traverse_right(self, start, stop, step, color, right, skipped=[]):
-        moves = {}
-        last = []
-        for r in range(start, stop, step):
-            if right >= COLS:
-                break
-
-            current = self.board[r][right]
-            if current == 0:
-                if skipped and not last:
-                    break
-                elif skipped:
-                    moves[(r, right)] = last + skipped
-                else:
-                    moves[(r, right)] = last
-
-                if last:
-                    if step == -1:
-                        row = max(r - 3, 0)
-                    else:
-                        row = min(r + 3, ROWS)
-
-                    moves.update(self._traverse_left(r + step, row, step, color, right - 1, skipped=last))
-                    moves.update(self._traverse_right(r + step, row, step, color, right + 1, skipped=last))
-                break
-            elif current.color == color:
-                break
+                moves.update(self._get_moves(row + 1, col, 1, piece.color))
+        elif piece.type == 'queen':
+            moves.update(self._get_moves(row, col - 1, 0, piece.color))  # left
+            moves.update(self._get_moves(row, col + 1, 0, piece.color))  # right
+            if piece.color == RED:
+               moves.update(self._get_moves(row - 1, col, 0, piece.color))  # up
             else:
-                last = [current]
-
-            right += 1
+               moves.update(self._get_moves(row + 1, col, 0, piece.color))  # down
+        elif piece.type == 'king':
+            moves.update(self._get_moves(row - 1, col, 0, piece.color))  # up
+            moves.update(self._get_moves(row + 1, col, 0, piece.color))  # down
+            moves.update(self._get_moves(row, col - 1, 0, piece.color))  # left
+            moves.update(self._get_moves(row, col + 1, 0, piece.color))  # right
+            print(f"Valid moves for {piece.color} {piece.type} at ({row}, {col}): {moves}")  # Debugging print
         return moves
+
+    def _get_moves(self, row, col, direction, color):
+        moves = {}
+        if 0 <= row < ROWS and 0 <= col < COLS:
+            current = self.board[row][col]
+            if current == 0:
+                moves[(row, col)] = []
+            elif current.color != color:
+                moves[(row, col)] = [current]
+
+        return moves                    
+                      
+                      
+  

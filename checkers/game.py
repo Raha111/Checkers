@@ -1,8 +1,6 @@
-#handles the game: who's turn, did we select a piece, can it move and stuff
-
 import pygame
 from .board import Board
-from .constants import RED, WHITE, BLUE, SQUARE_SIZE
+from .constants import RED, WHITE, BLUE, SQUARE_SIZE, GREY
 
 class Game:
     def __init__(self, win):
@@ -37,7 +35,6 @@ class Game:
         if piece != 0 and piece.color == self.turn:
             self.selected = piece
             self.valid_moves = self.board.get_valid_moves(piece)
-           # print(f"Valid moves for {piece.color} at ({row}, {col}): {self.valid_moves}")  # Debugging print
             return True
         
         return False
