@@ -75,7 +75,7 @@ def draw_winner_screen(winner):
     winner_text = "WHITE" if winner == WHITE else "RED"
     draw_text_center(f'{winner} wins!', TITLE_FONT, TEXT_COLOR, WIN, (WIDTH // 2, HEIGHT // 2))
     pygame.display.update()
-    pygame.time.delay(2000)  # Delay for 2 seconds before returning to main screen
+    pygame.time.delay(3000)  # Delay for 2 seconds before returning to main screen
 
 def main():
     run = True
