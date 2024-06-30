@@ -42,9 +42,10 @@ class Game:
     def _move(self, row, col):
         piece = self.board.get_piece(row, col)
         if self.selected and (row, col) in self.valid_moves:
+            target = self.board.get_piece(row, col)
+            if target != 0 and target.color != self.selected.color:
+              self.board.remove([target])
             self.board.move(self.selected, row, col)
-            if piece != 0 and piece.color != self.selected.color:
-              self.board.remove([piece])
             self.change_turn()
         else:
             return False
