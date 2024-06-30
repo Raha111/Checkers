@@ -21,9 +21,7 @@ TITLE_FONT = pygame.font.SysFont("comicsans", 50)
 BUTTON_WIDTH, BUTTON_HEIGHT = 200, 80
 
 # Load the background image
-BACKGROUND_IMAGE_PATH = "D:/4-1/lab/AI/Checkers/background.jpg"  # Replace with your image path
-background_image = pygame.image.load(BACKGROUND_IMAGE_PATH)
-background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+background_image = pygame.transform.scale(pygame.image.load('background.jpg'), (WIDTH, HEIGHT))
 
 def get_row_col_from_mouse(pos):
     x, y = pos
