@@ -1,6 +1,7 @@
 import pygame
 from .board import Board
 from .constants import RED, WHITE, BLUE, SQUARE_SIZE, GREY
+from minimax.fuzzy import calculate_fuzzy_move,determine_best_fuzzy_move
 
 class Game:
     def __init__(self, win):
@@ -69,3 +70,33 @@ class Game:
     def ai_move(self, board):
         self.board = board
         self.change_turn()
+
+    def ai_fuzzy_move(self):
+        best_move = determine_best_fuzzy_move(self.board)
+        if best_move:
+            row, col = best_move
+            piece = self.board.get_piece(row, col)
+            valid_moves = self.board.get_valid_moves(piece)
+            
+            if valid_moves:
+                best_move = None
+                best_strength = -1
+                
+                for move in valid_moves:
+                    new_row, new_col = move
+                    # Temporarily make the move
+                    piece = self.board.get_piece(row, col)
+                    original_position = (piece.row, piece.col)
+                    self.board.move(piece, new_row, new_col)
+                    strength = calculate_fuzzy_move(self.board, new_row, new_col)
+                    # Undo the move
+                    self.board.move(piece, *original_position)
+                    
+                    if strength > best_strength:
+                        best_strength = strength
+                        best_move = (row, col, new_row, new_col)
+
+                if best_move:
+                    row, col, new_row, new_col = best_move
+                    self.select(row, col)
+                    self._move(new_row, new_col)

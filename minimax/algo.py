@@ -32,10 +32,12 @@ def minimax(position, depth, max_player, game):
 
 
 def simulate_move(piece, move, board, game, skip):
-    board.move(piece, move[0], move[1])
-    if skip:
-        board.remove(skip)
 
+    if piece:
+        if skip:
+            for skipped_piece in skip:
+                board.remove([skipped_piece])
+        board.move(piece, move[0], move[1])
     return board
 
 

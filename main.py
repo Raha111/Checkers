@@ -99,15 +99,15 @@ def main():
                             difficulty_selected = True
                             if text == 'Easy':
                                 print("Easy mode selected")
-                                game_loop()
+                                game_loop('Easy')
                                 opening_screen = True  # Reset to opening screen for next game
                             elif text == 'Medium':
                                 print("Medium mode selected")
-                                game_loop()
+                                game_loop('Medium')
                                 opening_screen = True  # Reset to opening screen for next game
                             elif text == 'Hard':
                                 print("Hard mode selected")
-                                game_loop()
+                                game_loop('Hard')
                                 opening_screen = True  # Reset to opening screen for next game
 
         if not opening_screen:
@@ -119,7 +119,7 @@ def main():
 
     pygame.quit()
 
-def game_loop():
+def game_loop(difficulty):
     run = True
     clock = pygame.time.Clock()
     game = Game(WIN)
@@ -128,9 +128,19 @@ def game_loop():
         clock.tick(FPS)
         
         if game.turn == WHITE:
+
             print("AI's Turn")
-            value, new_board = alpha_beta_minimax(game.get_board(), 3, float('-inf'), float('inf'), True, game)
-            game.ai_move(new_board)   
+            if difficulty == 'Easy':
+                print("using minimax")
+                value, new_board = minimax(game.get_board(), 2, True, game)
+                game.ai_move(new_board) 
+            elif difficulty == 'Medium':
+                print("using alpha beta pruning")
+                value, new_board = alpha_beta_minimax(game.get_board(), 3, float('-inf'), float('inf'), True, game)
+                game.ai_move(new_board) 
+            else:
+                print("using fuzzy")
+                game.ai_fuzzy_move()
            
            
         if game.winner() is not None:
