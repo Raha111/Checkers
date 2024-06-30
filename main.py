@@ -28,6 +28,7 @@ def get_row_col_from_mouse(pos):
     return y // SQUARE_SIZE, x // SQUARE_SIZE
 
 def draw_text_center(text, font, color, surface, center, shadow=False):
+     
     if shadow:
         shadow_color = (0, 0, 0)  # Black shadow
         shadow_offset = (3, 3)    # Offset for the shadow
@@ -48,7 +49,6 @@ def draw_button(button_rect, text, hover):
 def draw_opening_screen():
     WIN.blit(background_image, (0, 0))  # Draw the background image
     
-
     # Draw start button
     start_button_rect = pygame.Rect(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT - BUTTON_HEIGHT - 50, BUTTON_WIDTH, BUTTON_HEIGHT)
     draw_button(start_button_rect, 'Start', False)
@@ -69,6 +69,13 @@ def draw_difficulty_screen():
 
     pygame.display.update()
     return buttons
+
+def draw_winner_screen(winner):
+    WIN.fill(BACKGROUND_COLOR)
+    winner_text = "WHITE" if winner == WHITE else "RED"
+    draw_text_center(f'{winner} wins!', TITLE_FONT, TEXT_COLOR, WIN, (WIDTH // 2, HEIGHT // 2))
+    pygame.display.update()
+    pygame.time.delay(2000)  # Delay for 2 seconds before returning to main screen
 
 def main():
     run = True
@@ -128,7 +135,6 @@ def game_loop(difficulty):
         clock.tick(FPS)
         
         if game.turn == WHITE:
-
             print("AI's Turn")
             if difficulty == 'Easy':
                 print("using minimax")
@@ -138,13 +144,13 @@ def game_loop(difficulty):
                 print("using alpha beta pruning")
                 value, new_board = alpha_beta_minimax(game.get_board(), 3, float('-inf'), float('inf'), True, game)
                 game.ai_move(new_board) 
-            else:
+            elif difficulty == 'Hard':
                 print("using fuzzy")
                 game.ai_fuzzy_move()
            
-           
         if game.winner() is not None:
-            print(game.winner())
+            winner = game.winner()
+            draw_winner_screen(winner)  # Display winner on a new screen
             run = False
 
         for event in pygame.event.get():
@@ -158,7 +164,7 @@ def game_loop(difficulty):
                 print(f"Mouse clicked at ({row}, {col})")
                 game.select(row, col)
                 if game.winner() is not None:
-                    pygame.time.delay(1000)  # Delay before resetting
+                    pygame.time.delay(10000)  # Delay before resetting
                     game.restart()
                     return
 
