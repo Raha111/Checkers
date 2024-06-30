@@ -5,7 +5,7 @@ from .piece import Piece
 class Board:
     def __init__(self):
         self.board = []
-        self.red_left = self.white_left = 16
+        self.red_left = self.white_left = 13
         self.red_kings = self.white_kings = 0
         self.create_board()
 
@@ -14,9 +14,33 @@ class Board:
         for row in range(ROWS):
             for col in range(row % 2, ROWS, 2):
                 pygame.draw.rect(win, WHITE, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-
+    '''
     def evaluate(self):
         return self.white_left - self.red_left + (self.white_kings * 0.5 - self.red_kings * 0.5)
+    '''
+    def evaluate(self):
+        white_score = 0
+        red_score = 0
+
+        for row in self.board:
+            for piece in row:
+                if piece != 0:
+                    if piece.color == WHITE:
+                        if piece.type == 'soldier':
+                            white_score += 1
+                        elif piece.type == 'queen':
+                            white_score += 3
+                        elif piece.type == 'king':
+                            white_score += 5
+                    elif piece.color == RED:
+                        if piece.type == 'soldier':
+                            red_score += 1
+                        elif piece.type == 'queen':
+                            red_score += 3
+                        elif piece.type == 'king':
+                            red_score += 5
+
+        return white_score - red_score
 
     def get_all_pieces(self, color):
         pieces = []
@@ -27,15 +51,25 @@ class Board:
         return pieces
 
     def move(self, piece, row, col):
-        self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-        piece.move(row, col)
+        if piece:
+            # Check if the target cell is occupied
+            target_piece = self.get_piece(row, col)
+            if target_piece != 0:
+                # Remove the captured piece
+                self.remove([target_piece])
+            #print(f"Before move - Piece position: ({piece.row}, {piece.col}), Board state:")
+            self.board[piece.row][piece.col] = 0  
+            self.board[row][col] = piece  
+            piece.move(row, col) 
+            #print(f"After move - Piece position: ({piece.row}, {piece.col}), Board state:")
 
-        if row == 0 or row == ROWS - 1:
-            piece.make_king()
-            if piece.color == WHITE:
-                self.white_kings += 1
-            else:
-                self.red_kings += 1
+            if row == 0 or row == ROWS - 1:
+                piece.make_king()
+                if piece.color == WHITE:
+                    self.white_kings += 1
+                else:
+                    self.red_kings += 1
+
 
     def get_piece(self, row, col):
         return self.board[row][col]
@@ -72,12 +106,13 @@ class Board:
 
     def remove(self, pieces):
         for piece in pieces:
-            self.board[piece.row][piece.col] = 0
             if piece != 0:
+                self.board[piece.row][piece.col] = 0
                 if piece.color == RED:
                     self.red_left -= 1
                 else:
                     self.white_left -= 1
+
 
     def winner(self):
         if self.red_left <= 0:
@@ -108,7 +143,12 @@ class Board:
             moves.update(self._get_moves(row + 1, col, 0, piece.color))  # down
             moves.update(self._get_moves(row, col - 1, 0, piece.color))  # left
             moves.update(self._get_moves(row, col + 1, 0, piece.color))  # right
-            print(f"Valid moves for {piece.color} {piece.type} at ({row}, {col}): {moves}")  # Debugging print
+            # Diagonals
+            moves.update(self._get_moves(row - 1, col - 1, 0, piece.color))  # up-left
+            moves.update(self._get_moves(row - 1, col + 1, 0, piece.color))  # up-right
+            moves.update(self._get_moves(row + 1, col - 1, 0, piece.color))  # down-left
+            moves.update(self._get_moves(row + 1, col + 1, 0, piece.color))  # down-right
+            #print(f"Valid moves for {piece.color} {piece.type} at ({row}, {col}): {moves}")  # Debugging print
         return moves
 
     def _get_moves(self, row, col, direction, color):
