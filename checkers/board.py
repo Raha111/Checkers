@@ -7,6 +7,7 @@ class Board:
         self.board = []
         self.red_left = self.white_left = 13
         self.red_kings = self.white_kings = 0
+        self.turn = WHITE
         self.create_board()
 
     def draw_cubes(self, win):
