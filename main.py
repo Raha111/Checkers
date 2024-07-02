@@ -12,9 +12,9 @@ import numpy as np
 
 # Constants
 FPS = 60
-BACKGROUND_COLOR = (139, 69, 19)
+BACKGROUND_COLOR = (255, 240, 200)
 BACKGROUND_COLORR = (255, 255, 255)
-BUTTON_COLOR = (255, 223, 0)
+BUTTON_COLOR = (255, 150, 50)
 BUTTON_HOVER_COLOR = (255, 255, 102)
 TEXT_COLOR = (0, 0, 0)
 SHADOW_COLOR = (100, 100, 100)
@@ -50,6 +50,7 @@ def draw_button(button_rect, text, hover):
     pygame.draw.rect(WIN, color, button_rect, border_radius=10)
     draw_text_center(text, BUTTON_FONT, TEXT_COLOR, WIN, button_rect.center)
 
+
 def draw_opening_screen():
     WIN.blit(background_image, (0, 0))
     start_button_rect = pygame.Rect(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT - BUTTON_HEIGHT - 50, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -59,70 +60,129 @@ def draw_opening_screen():
 
 def draw_difficulty_screen():
     WIN.fill(BACKGROUND_COLOR)
-    draw_text_center('DIFFICULTY LEVEL', TITLE_FONT, TEXT_COLOR, WIN, (WIDTH // 2, HEIGHT // 4))
+    draw_text_center('DIFFICULTY LEVEL', TITLE_FONT, TEXT_COLOR, WIN, (WIDTH // 2, HEIGHT // 6))
     buttons = []
     for i, text in enumerate(['Easy', 'Medium', 'Hard', 'Very Hard']):
-        button_rect = pygame.Rect(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 + i * (BUTTON_HEIGHT + 20), BUTTON_WIDTH, BUTTON_HEIGHT)
+        button_rect = pygame.Rect(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 4 + i * (BUTTON_HEIGHT + 20), BUTTON_WIDTH, BUTTON_HEIGHT)
         buttons.append((button_rect, text))
         draw_button(button_rect, text, False)
+        
+
+    
     how_to_play_button_rect = pygame.Rect(WIDTH - 230, HEIGHT - 100, 200, 60)
+    
+    
+    
     draw_button(how_to_play_button_rect, 'How to Play', False)
+    
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEMOTION:
+            draw_instructions_screen()  # Transition to instructions screen
+    
     pygame.display.update()
     return buttons, how_to_play_button_rect
 
 
 
+
 def draw_instructions_screen():
-    WIN.fill(BACKGROUND_COLOR)
-    instructions_text = [
-        "How to Play Checkers:",
-        "1. Move your pieces diagonally forward to",
-        "   an adjacent empty square.",
-        "2. Capture opponent's pieces by jumping",
-        "   over them.",
-        "3. Reach the opponent's back row to",
-        "   crown your piece and gain King's powers."
-    ]
-    text_start_y = HEIGHT // 4
-    for i, line in enumerate(instructions_text):
-        draw_text_center(line, BUTTON_FONT, TEXT_COLOR, WIN, (WIDTH // 2, text_start_y + i * 40))
+    WIN.fill(BACKGROUND_COLOR)  # Fill with background color
     
-    close_button_rect = pygame.Rect(WIDTH - 60, 20, 40, 40)
-    pygame.draw.rect(WIN, BUTTON_COLOR, close_button_rect)
-    draw_text_center('X', BUTTON_FONT, TEXT_COLOR, WIN, close_button_rect.center)
+    # Title
+    title_font = pygame.font.SysFont("comicsans", 50)
+    title_text = title_font.render("Instructions", True, TEXT_COLOR)
+    title_rect = title_text.get_rect(center=(WIDTH // 2, HEIGHT // 8))
+    WIN.blit(title_text, title_rect)
+    
+    # Instructions text
+    instructions_font = pygame.font.SysFont("comicsans", 25)
+    instructions_text = [
+        "Rules:",
+        "Soldier can move forward 1 cell","and capture opponent pieces."," It replaces the opponent's piece in that cell.",
+        " Queen can move up, left, right 1 cell ","and capture opponent’s piece. ","It replaces the opponent's piece on that cell.",
+        " King can move up, down, left, right 1 cell ","and capture opponent’s piece. ","It replaces the opponent's piece on that cell.",
+        " When a soldier or queen reaches the ","opponent’s last row, it becomes king."," The game ends when all pieces are gone."
+    ]
+    
+    line_spacing = 35
+    start_y = HEIGHT // 4 + 50  # Adjusted starting Y position for content
+    
+    for i, line in enumerate(instructions_text):
+        text_render = instructions_font.render(line, True, TEXT_COLOR)
+        text_rect = text_render.get_rect(center=(WIDTH // 2, start_y + i * line_spacing))
+        
+        # Add extra space between every second line for better readability
+        if i % 3 == 1:
+            text_rect.y += 15
+        
+        WIN.blit(text_render, text_rect)
+    
+    # Close button
+    close_button_rect = pygame.Rect(WIDTH - 80, 30, 50, 50)
+    pygame.draw.rect(WIN, BUTTON_COLOR, close_button_rect, border_radius=15)
+    close_text = instructions_font.render('X', True, (255, 255, 255))
+    text_rect = close_text.get_rect(center=close_button_rect.center)
+    WIN.blit(close_text, text_rect)
+    
     pygame.display.update()
+    
     return close_button_rect
+
+
+
+
+
 
 def load_gif(filename):
     gif = imageio.get_reader(filename)
     return [np.array(frame) for frame in gif]
 
 def resize_gif_frames(gif_frames, new_size=(WIDTH, HEIGHT)):
-    return [pygame.image.fromstring(Image.fromarray(frame).resize(new_size, resample=Image.BILINEAR).tobytes(), new_size, 'RGB') for frame in gif_frames]
+    resized_frames = []
+    for frame in gif_frames:
+        pil_image = Image.fromarray(frame)
+        pil_image = pil_image.resize(new_size, resample=Image.BILINEAR)
+        pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
+        resized_frames.append(pygame_image)
+    return resized_frames
 
-def draw_winner_screen(winner, gif_filename):
+
+def draw_winner_screen(winner, gif_filename_win, gif_filename_lose):
     WIN.fill(BACKGROUND_COLORR)
-    winner_text = "You lose!!!" if winner == "WHITE" else "You win!!!" if winner == "RED" else "Unknown"
+    
+    if winner == "WHITE":
+        winner_text = "You lose!!!"
+        gif_filename = gif_filename_lose
+    elif winner == "RED":
+        winner_text = "You win!!!"
+        gif_filename = gif_filename_win
+    else:
+        winner_text = "Unknown"
+        gif_filename = None
 
-    gif_frames = resize_gif_frames(load_gif(gif_filename), (WIDTH, HEIGHT))
-    frame_index, num_frames, clock, running = 0, len(gif_frames), pygame.time.Clock(), True
+    if gif_filename:
+        gif_frames = resize_gif_frames(load_gif(gif_filename), (WIDTH, HEIGHT))
+        frame_index, num_frames, clock, running = 0, len(gif_frames), pygame.time.Clock(), True
 
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                if how_to_play_button_rect.collidepoint(pos):
-                    draw_instructions_screen()
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = pygame.mouse.get_pos()
+                    if play_again_button_rect.collidepoint(pos):
+                        return 'opening'
 
-        WIN.blit(gif_frames[frame_index], (0, HEIGHT // 50))
-        draw_text_center(winner_text, TITLE_FONT, TEXT_COLOR, WIN, (WIDTH // 2, HEIGHT // 10), shadow=True)
-        pygame.display.flip()
-        frame_index = (frame_index + 1) % num_frames
-        clock.tick(FPS)
-
-    pygame.quit()
+            WIN.blit(gif_frames[frame_index], (0, HEIGHT // 50))
+            draw_text_center(winner_text, TITLE_FONT, TEXT_COLOR, WIN, (WIDTH // 2, HEIGHT // 10), shadow=True)
+            play_again_button_rect = pygame.Rect(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT - BUTTON_HEIGHT - 50, BUTTON_WIDTH, BUTTON_HEIGHT)
+            draw_button(play_again_button_rect, 'Play Again', False)
+            pygame.display.flip()
+            frame_index = (frame_index + 1) % num_frames
+            clock.tick(12)
+        pygame.display.update()    
+        
+    return 'opening'
 
 def main():
     run, clock, screen_state, buttons, how_to_play_button_rect = True, pygame.time.Clock(), 'opening', [], None
@@ -139,7 +199,13 @@ def main():
 
         for event in pygame.event.get():
             if event.type == QUIT:
-                run = False
+                
+                if screen_state == 'difficulty_screen':
+                    screen_state = 'opening'
+                else:
+                    run = False
+            
+                
             elif event.type == MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if screen_state == 'opening' and button_rect.collidepoint(pos):
@@ -148,7 +214,7 @@ def main():
                     for button_rect, text in buttons:
                         if button_rect.collidepoint(pos):
                             game_loop(text)
-                            screen_state = 'difficulty'
+                            screen_state = 'opening'
                     if how_to_play_button_rect.collidepoint(pos):
                         screen_state = 'instructions'
                 elif screen_state == 'instructions' and close_button_rect.collidepoint(pos):
@@ -161,6 +227,7 @@ def main():
         pygame.display.update()
 
     pygame.quit()
+    return 'opening'
 
 def game_loop(difficulty):
     run = True
@@ -183,10 +250,18 @@ def game_loop(difficulty):
                     print(f"Mouse clicked at ({row}, {col})")
                     game.select(row, col)
                     if game.winner() is not None:
-                        draw_winner_screen(game.winner())
+                        if game.winner() == "WHITE":
+                            
+                            draw_winner_screen("WHITE", "win.gif", "lose.gif")
+                            
+                        else:
+                            
+                           draw_winner_screen("RED",  "win.gif", "lose.gif") 
+                            
+                        
                         pygame.time.delay(2000)
                         game.reset()  # Reset the game after displaying winner
-                        continue  # Continue to next iteration of the loop
+                        return 'opening'  # Continue to next iteration of the loop
 
         if game.turn == WHITE and game.winner() is None:
             print("AI's Turn")
@@ -207,22 +282,19 @@ def game_loop(difficulty):
                 game.ai_move(new_board)
                 
         if game.winner():
-            draw_winner_screen(game.winner(), "winner.gif")
-            run = False
+            if game.winner() == "WHITE":
+                            
+                draw_winner_screen("WHITE", "win.gif", "lose.gif")
+                            
+            else:
+                            
+                draw_winner_screen("RED",  "win.gif", "lose.gif")             
+                
+                
             
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                main()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                row, col = get_row_col_from_mouse(pygame.mouse.get_pos())
-                game.select(row, col)
-                if game.winner():
-                    draw_winner_screen(game.winner(), "winner.gif")
-                    pygame.time.delay(10000)
-                    game.reset()
-                    return    
-
+            return 'opening'
+            
+        
         game.update()  # Update the game state and display
         game.draw_valid_moves(game.valid_moves)
         pygame.display.update()  # Update the display
