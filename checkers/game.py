@@ -1,7 +1,12 @@
 import pygame
+from pygame.locals import *
 from .board import Board
 from .constants import RED, WHITE, BLUE, SQUARE_SIZE, GREY
 from minimax.fuzzy import calculate_fuzzy_move,determine_best_fuzzy_move
+
+pygame.init()
+pygame.mixer.init()
+select_sound = pygame.mixer.Sound("mouse-click-104737.mp3")
 
 class Game:
     def __init__(self, win):
@@ -32,6 +37,7 @@ class Game:
         self._init()
 
     def select(self, row, col):
+        select_sound.play()
         if self.selected:
             result = self._move(row, col)
             if not result:

@@ -28,6 +28,9 @@ BUTTON_WIDTH, BUTTON_HEIGHT = 200, 80
 
 background_image = pygame.transform.scale(pygame.image.load('background.jpg'), (WIDTH, HEIGHT))
 
+click_sound = pygame.mixer.Sound("lclick-13694.mp3")
+
+
 def get_row_col_from_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
@@ -164,6 +167,9 @@ def draw_winner_screen(winner, gif_filename_win, gif_filename_lose):
         gif_frames = resize_gif_frames(load_gif(gif_filename), (WIDTH, HEIGHT))
         frame_index, num_frames, clock, running = 0, len(gif_frames), pygame.time.Clock(), True
 
+        # Define play_again_button_rect before the loop
+        play_again_button_rect = pygame.Rect(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT - BUTTON_HEIGHT - 50, BUTTON_WIDTH, BUTTON_HEIGHT)
+
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -175,7 +181,6 @@ def draw_winner_screen(winner, gif_filename_win, gif_filename_lose):
 
             WIN.blit(gif_frames[frame_index], (0, HEIGHT // 50))
             draw_text_center(winner_text, TITLE_FONT, TEXT_COLOR, WIN, (WIDTH // 2, HEIGHT // 10), shadow=True)
-            play_again_button_rect = pygame.Rect(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT - BUTTON_HEIGHT - 50, BUTTON_WIDTH, BUTTON_HEIGHT)
             draw_button(play_again_button_rect, 'Play Again', False)
             pygame.display.flip()
             frame_index = (frame_index + 1) % num_frames
@@ -183,6 +188,7 @@ def draw_winner_screen(winner, gif_filename_win, gif_filename_lose):
         pygame.display.update()    
         
     return 'opening'
+
 
 def main():
     run, clock, screen_state, buttons, how_to_play_button_rect = True, pygame.time.Clock(), 'opening', [], None
@@ -206,18 +212,23 @@ def main():
                     run = False
             
                 
+                 
             elif event.type == MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 if screen_state == 'opening' and button_rect.collidepoint(pos):
+                    click_sound.play()  # Play sound on button click
                     screen_state = 'difficulty'
                 elif screen_state == 'difficulty_screen':
                     for button_rect, text in buttons:
                         if button_rect.collidepoint(pos):
+                            click_sound.play()  # Play sound on button click
                             game_loop(text)
                             screen_state = 'opening'
                     if how_to_play_button_rect.collidepoint(pos):
+                        click_sound.play()  # Play sound on button click
                         screen_state = 'instructions'
                 elif screen_state == 'instructions' and close_button_rect.collidepoint(pos):
+                    click_sound.play()  # Play sound on button click
                     screen_state = 'difficulty'
 
         if screen_state == 'difficulty_screen':
@@ -266,20 +277,20 @@ def game_loop(difficulty):
         if game.turn == WHITE and game.winner() is None:
             print("AI's Turn")
             if difficulty == 'Easy':
-                print("using minimax")
-                value, new_board = minimax(game.get_board(), 2, True, game)
-                game.ai_move(new_board)
-            elif difficulty == 'Medium':
-                print("using alpha beta pruning")
-                value, new_board = alpha_beta_minimax(game.get_board(), 3, float('-inf'), float('inf'), True, game)
-                game.ai_move(new_board)
-            elif difficulty == 'Hard':
-                print("using fuzzy")
-                game.ai_fuzzy_move()
-            elif difficulty == 'Very Hard':
                 print("using hybrid genetic and minimax algorithm")
                 value, new_board = GA_minimax(game.get_board(), 4, True, float('-inf'), float('inf'), game, optimized_evaluation_function)
                 game.ai_move(new_board)
+            elif difficulty == 'Medium':
+                print("using minimax")
+                value, new_board = minimax(game.get_board(), 2, True, game)
+                game.ai_move(new_board)
+            elif difficulty == 'Hard':
+                print("using alpha beta pruning")
+                value, new_board = alpha_beta_minimax(game.get_board(), 3, float('-inf'), float('inf'), True, game)
+                game.ai_move(new_board)
+            elif difficulty == 'Very Hard':
+                print("using fuzzy")
+                game.ai_fuzzy_move()
                 
         if game.winner():
             if game.winner() == "WHITE":

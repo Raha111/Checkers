@@ -1,6 +1,11 @@
 import pygame
+from pygame.locals import *
 from .constants import BLACK, ROWS, COLS, RED, SQUARE_SIZE, WHITE, GREY
 from .piece import Piece
+
+pygame.init()
+pygame.mixer.init()
+out_sound = pygame.mixer.Sound("pick-92276.mp3")
 
 class Board:
     def __init__(self):
@@ -106,9 +111,11 @@ class Board:
                     piece.draw(win)
 
     def remove(self, pieces):
+        
         for piece in pieces:
             if piece != 0:
                 self.board[piece.row][piece.col] = 0
+                out_sound.play()
                 if piece.color == RED:
                     self.red_left -= 1
                 else:
